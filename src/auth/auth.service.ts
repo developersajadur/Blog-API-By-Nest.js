@@ -1,15 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   forwardRef,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import { comparePasswords } from 'src/common/password/password.hash';
 import { UserService } from 'src/user/user.service';
 
@@ -21,11 +19,13 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
   async login(email: string, password: string): Promise<any> {
-    const user = await this.userService.getUserByEmailForLogin(email);
+    const user = (await this.userService.getUserByEmailForLogin(email)) as User;
     if (!user) {
       throw new UnauthorizedException('User not found');
     } else if (user.isBlocked) {
       throw new UnauthorizedException('User is blocked');
+    } else if (user.isDeleted) {
+      throw new NotFoundException('User not found');
     }
 
     const isPasswordValid = await comparePasswords(password, user.password);

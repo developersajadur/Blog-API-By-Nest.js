@@ -26,12 +26,14 @@ export class UserService {
 
   async getAllUsers(): Promise<SafeUser[]> {
     return this.prisma.user.findMany({
+      where: { isDeleted: false },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
         isBlocked: true,
+        isDeleted: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -40,13 +42,14 @@ export class UserService {
 
   async getUserDataById(userId: string): Promise<SafeUser | null> {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, isDeleted: false },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
         isBlocked: true,
+        isDeleted: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -61,7 +64,7 @@ export class UserService {
 
   async getUserByEmailForLogin(email: string): Promise<any> {
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email, isDeleted: false },
       select: {
         id: true,
         email: true,
@@ -81,7 +84,7 @@ export class UserService {
 
   async blockUser(userId: string): Promise<SafeUser> {
     const user = await this.prisma.user.update({
-      where: { id: userId },
+      where: { id: userId, isDeleted: false },
       data: { isBlocked: true },
       select: {
         id: true,
@@ -89,6 +92,7 @@ export class UserService {
         name: true,
         role: true,
         isBlocked: true,
+        isDeleted: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -102,13 +106,14 @@ export class UserService {
   async unblockUser(userId: string): Promise<SafeUser> {
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { isBlocked: false },
+      data: { isBlocked: false, isDeleted: false },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
         isBlocked: true,
+        isDeleted: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -117,5 +122,15 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     return user;
+  }
+
+  async deleteUser(id: string): Promise<null> {
+    await this.prisma.user.update({
+      where: { id, isDeleted: false },
+      data: {
+        isDeleted: true,
+      },
+    });
+    return null;
   }
 }

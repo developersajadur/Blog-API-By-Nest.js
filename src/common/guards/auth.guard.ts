@@ -43,6 +43,8 @@ export class AuthGuard implements CanActivate {
         throw new NotFoundException('User not found');
       } else if (isExistUser.isBlocked) {
         throw new UnauthorizedException('User is blocked');
+      } else if (isExistUser.isDeleted) {
+        throw new NotFoundException('User not found');
       }
       (req as any).user = isExistUser;
       return true;

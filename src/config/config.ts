@@ -2,6 +2,8 @@ import { getEnv, getEnvNumber } from './env';
 
 export const port = getEnvNumber('PORT');
 
+export const isProduction = getEnv('NODE_ENV') === 'production';
+
 export const bcryptSaltRounds = getEnvNumber('BYCRYPT_SALT_ROUNDS');
 
 export const database = {

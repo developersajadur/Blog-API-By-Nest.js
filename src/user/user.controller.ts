@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
-import { Role } from 'src/auth/roles.enum';
 import { SafeUser } from './user.type';
 import { UserService } from './user.service';
+import { Role } from '@prisma/client';
 
 @Controller('users')
 export class UserController {
@@ -46,7 +46,7 @@ export class UserController {
     return this.userService.getUserDataById(userId);
   }
 
-  @Post('/block-user/:id')
+  @Post('/block/:id')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async blockUser(@Req() req): Promise<SafeUser | null> {
@@ -54,11 +54,19 @@ export class UserController {
     return this.userService.blockUser(userId);
   }
 
-  @Post('/unblock-user/:id')
+  @Post('/unblock/:id')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async unblockUser(@Req() req): Promise<SafeUser | null> {
     const userId = req.params.id as string;
     return this.userService.unblockUser(userId);
+  }
+
+  @Delete('/delete/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async deleteUser(@Req() req): Promise<null> {
+    const userId = req.params.id as string;
+    return this.userService.deleteUser(userId);
   }
 }
